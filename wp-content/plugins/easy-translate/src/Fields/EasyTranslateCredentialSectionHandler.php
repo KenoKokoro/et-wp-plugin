@@ -76,7 +76,7 @@ class EasyTranslateCredentialSectionHandler
     private function passwordField(string $id, string $placeholder): void
     {
         printf(
-            "<input type=\"password\" id=\"{$id}\" name=\"my_option_name[{$id}]\" value=\"%s\" placeholder=\"{$placeholder}\"/>",
+            "<input type=\"password\" id=\"{$id}\" name=\"{$this->optionName}[{$id}]\" value=\"%s\" placeholder=\"{$placeholder}\"/>",
             isset($this->options[$id]) ? '**********' : ''
         );
     }

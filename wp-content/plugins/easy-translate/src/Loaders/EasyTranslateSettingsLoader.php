@@ -71,9 +71,14 @@ class EasyTranslateSettingsLoader implements EasyTranslateLoaderInterface
     {
         $newInput = [];
 
+        // TODO: Add error handling with API call
         if (!($input[EasyTranslateCredentialSectionHandler::CLIENT_ID_FIELD] ?? false)) {
-            add_settings_error(self::CREDENTIAL_SECTION_NAME, self::CREDENTIAL_SECTION_NAME . '-error', 'Error',
-                'error');
+            add_settings_error(
+                self::CREDENTIAL_SECTION_NAME,
+                self::CREDENTIAL_SECTION_NAME . '-error',
+                'Error',
+                'error'
+            );
         }
         foreach ($input as $id => $value) {
             $newInput[$id] = sanitize_text_field($value);
