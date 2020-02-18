@@ -3,7 +3,8 @@
 namespace EasyTranslate\Loaders;
 
 use EasyTranslate\Api\Send\ApiService;
-use EasyTranslate\Fields\CredentialSectionHandler;
+use EasyTranslate\Fields\FieldNameMapper;
+use EasyTranslate\Fields\SandboxCredentialSectionHandler;
 
 /**
  * Fired during plugin activation
@@ -15,9 +16,10 @@ use EasyTranslate\Fields\CredentialSectionHandler;
  */
 class SettingsLoader implements LoaderInterface
 {
-    private const OPTION_NAME = 'easy_translate_api_integration';
-    private const PAGE_NAME = 'easy_translate_api_page';
-    private const CREDENTIAL_SANDBOX_SECTION_NAME = 'et_api_sandbox_credentials_section';
+    const OPTION_NAME = 'easy_translate_api_integration';
+    const SANDBOX_MODE_FIELD = 'et_api_sandbox_mode';
+    const PAGE_NAME = 'easy_translate_api_page';
+    const CREDENTIAL_SANDBOX_SECTION_NAME = 'et_api_sandbox_credentials_section';
 
     /**
      * Boot the loader
@@ -77,33 +79,28 @@ class SettingsLoader implements LoaderInterface
             $newInput[$id] = sanitize_text_field($value);
         }
 
-        $service = new ApiService([
-            'client_id' => $newInput[CredentialSectionHandler::SANDBOX_CLIENT_ID_FIELD],
-            'client_secret' => $newInput[CredentialSectionHandler::SANDBOX_CLIENT_SECRET_FIELD],
-            'username' => $newInput[CredentialSectionHandler::SANDBOX_LOGIN_USERNAME_FIELD],
-            'password' => $newInput[CredentialSectionHandler::SANDBOX_LOGIN_PASSWORD_FIELD],
-        ]);
+        $service = new ApiService(FieldNameMapper::map($newInput));
         $response = $service->login();
         if ($response['error'] ?? false) {
             add_settings_error(
-                CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
+                SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
                 'access-token-error',
                 $response['error'] ?? '',
                 'error'
             );
             add_settings_error(
-                CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
+                SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
                 'access-token-error',
                 $response['hint'] ?? '',
                 'info'
             );
-            $newInput[CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = '';
-            $newInput[CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = '';
+            $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = '';
+            $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = '';
 
             return $newInput;
         }
-        $newInput[CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = $response['access_token'];
-        $newInput[CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = date(
+        $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = $response['access_token'];
+        $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = date(
             'Y-m-d H:i:s',
             strtotime('now') + $response['expires_in']
         );
@@ -113,7 +110,6 @@ class SettingsLoader implements LoaderInterface
 
     private function registerCredentialsSection(): void
     {
-        $credentialHandler = new CredentialSectionHandler(self::OPTION_NAME);
 
         add_settings_section(
             self::CREDENTIAL_SANDBOX_SECTION_NAME, // ID
@@ -121,47 +117,7 @@ class SettingsLoader implements LoaderInterface
             [$this, 'showApiCredentialsSectionInfo'], // Callback
             self::PAGE_NAME // Page
         );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_CLIENT_ID_FIELD, // ID
-            __('Client ID'), // Title
-            [$credentialHandler, 'sandboxClientIdHandler'], // Callback
-            self::PAGE_NAME, // Page
-            self::CREDENTIAL_SANDBOX_SECTION_NAME // Section
-        );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_CLIENT_SECRET_FIELD,
-            __('Client Secret'),
-            [$credentialHandler, 'sandboxClientSecretHandler'],
-            self::PAGE_NAME,
-            self::CREDENTIAL_SANDBOX_SECTION_NAME
-        );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_LOGIN_USERNAME_FIELD,
-            __('Username'),
-            [$credentialHandler, 'sandboxUsernameHandler'],
-            self::PAGE_NAME,
-            self::CREDENTIAL_SANDBOX_SECTION_NAME
-        );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_LOGIN_PASSWORD_FIELD,
-            __('Password'),
-            [$credentialHandler, 'sandboxPasswordHandler'],
-            self::PAGE_NAME,
-            self::CREDENTIAL_SANDBOX_SECTION_NAME
-        );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
-            __('Access Token'),
-            [$credentialHandler, 'sandboxAccessToken'],
-            self::PAGE_NAME,
-            self::CREDENTIAL_SANDBOX_SECTION_NAME
-        );
-        add_settings_field(
-            CredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD,
-            __('Access Token Valid Until'),
-            [$credentialHandler, 'sandboxAccessTokenTtl'],
-            self::PAGE_NAME,
-            self::CREDENTIAL_SANDBOX_SECTION_NAME
-        );
+
+        (new SandboxCredentialSectionHandler())->showFields();
     }
 }

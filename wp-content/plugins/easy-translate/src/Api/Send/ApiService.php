@@ -82,6 +82,24 @@ class ApiService
         }
     }
 
+    public function translate(array $content): array
+    {
+        $path = $this->versionedPath('projects');
+        try {
+            $response = $this->httpClient->post($path, [
+                'json' => [
+                    'source_language' => 'en',
+                    'target_languages' => ['da', 'de'],
+                    'content' => $content,
+                ],
+            ]);
+
+            return $this->decodeBody($response);
+        } catch (RequestException $exception) {
+            wp_die(dump($this->decodeBody($exception->getResponse())));
+        }
+    }
+
     /**
      * Set the credentials/login details
      * @param array $options
@@ -92,6 +110,7 @@ class ApiService
         $this->clientSecret = $options['client_secret'] ?? null;
         $this->username = $options['username'] ?? null;
         $this->password = $options['password'] ?? null;
+        $this->accessToken = $options['access_token'] ?? null;
         $this->sandboxMode = $options['sandbox_mode'] ?? true;
     }
 
@@ -131,5 +150,14 @@ class ApiService
     private function decodeBody(ResponseInterface $response): array
     {
         return json_decode((string)$response->getBody(), true);
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     */
+    private function versionedPath(string $path): string
+    {
+        return '/api/' . self::API_VERSION . "/{$path}";
     }
 }

@@ -2,7 +2,9 @@
 
 namespace EasyTranslate\Fields;
 
-class CredentialSectionHandler
+use EasyTranslate\Loaders\SettingsLoader;
+
+class SandboxCredentialSectionHandler
 {
     const SANDBOX_CLIENT_ID_FIELD = 'et_api_sandbox_client_id';
     const SANDBOX_CLIENT_SECRET_FIELD = 'et_api_sandbox_client_secret';
@@ -21,10 +23,56 @@ class CredentialSectionHandler
      */
     private $optionName;
 
-    public function __construct(string $optionName)
+    public function __construct()
     {
-        $this->optionName = $optionName;
-        $this->options = get_option($optionName);
+        $this->optionName = SettingsLoader::OPTION_NAME;
+        $this->options = get_option($this->optionName);
+    }
+
+    public function showFields(): void
+    {
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_CLIENT_ID_FIELD, // ID
+            __('Client ID'), // Title
+            [$this, 'sandboxClientIdHandler'], // Callback
+            SettingsLoader::PAGE_NAME, // Page
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME // Section
+        );
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_CLIENT_SECRET_FIELD,
+            __('Client Secret'),
+            [$this, 'sandboxClientSecretHandler'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_LOGIN_USERNAME_FIELD,
+            __('Username'),
+            [$this, 'sandboxUsernameHandler'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_LOGIN_PASSWORD_FIELD,
+            __('Password'),
+            [$this, 'sandboxPasswordHandler'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
+            __('Access Token'),
+            [$this, 'sandboxAccessToken'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
+        add_settings_field(
+            SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD,
+            __('Access Token Valid Until'),
+            [$this, 'sandboxAccessTokenTtl'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
     }
 
     /**
