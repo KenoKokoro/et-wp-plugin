@@ -1,0 +1,15 @@
+{
+  "name": "kenokokoro/et-wp-plugin",
+  "homepage": "https://github.com/kenokokoro/et-wp-plugin",
+  "description": "Translations made easy",
+  "license": "GPL-2.0+",
+  "type": "wordpress-plugin",
+  "keywords": [
+    "WordPress",
+    "plugin",
+    "php",
+    "easy",
+    "translate",
+    "easy translate"
+  ]
+}
