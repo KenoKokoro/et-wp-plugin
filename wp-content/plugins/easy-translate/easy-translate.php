@@ -8,9 +8,15 @@
  */
 
 // If this file is called directly, abort.
+use EasyTranslate\Activator;
+use EasyTranslate\Deactivator;
+use EasyTranslate\EasyTranslateLoader;
+
 if (!defined('WPINC')) {
     die;
 }
+
+require plugin_dir_path(__FILE__) . 'vendor/autoload.php';
 
 // Current plugin version
 define('EASY_TRANSLATE_V1_VERSION', '0.0.1');
@@ -21,8 +27,7 @@ define('EASY_TRANSLATE_V1_VERSION', '0.0.1');
 if (!function_exists('et_v1_activate_plugin')) {
     function et_v1_activate_plugin(): void
     {
-        require_once plugin_dir_path(__FILE__) . 'src/EasyTranslateActivator.php';
-        EasyTranslateActivator::activate();
+        Activator::activate();
     }
 }
 
@@ -32,8 +37,7 @@ if (!function_exists('et_v1_activate_plugin')) {
 if (!function_exists('et_v1_deactivate_plugin')) {
     function et_v1_deactivate_plugin(): void
     {
-        require_once plugin_dir_path(__FILE__) . 'src/EasyTranslateDeactivate.php';
-        EasyTranslateDeactivate::deactivate();
+        Deactivator::deactivate();
     }
 }
 
@@ -46,9 +50,7 @@ register_deactivation_hook(__FILE__, 'et_v1_deactivate_plugin');
 if (!function_exists('et_v1_handle_plugin')) {
     function et_v1_handle_plugin(): void
     {
-        /** @var EasyTranslateLoader $handler */
-        $handler = require_once plugin_dir_path(__FILE__) . 'src/EasyTranslateLoader.php';
-        $handler->execute();
+        (new EasyTranslateLoader)->execute();
     }
 }
 

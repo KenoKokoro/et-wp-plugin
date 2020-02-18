@@ -1,6 +1,8 @@
 <?php
 
-interface EasyTranslateLoaderInterface
+namespace EasyTranslate\Loaders;
+
+interface LoaderInterface
 {
     /**
      * Boot the loader

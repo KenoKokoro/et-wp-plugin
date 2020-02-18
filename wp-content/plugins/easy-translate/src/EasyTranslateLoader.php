@@ -1,6 +1,9 @@
 <?php
 
-require_once plugin_dir_path(__DIR__) . 'src/Loaders/EasyTranslateSettingsLoader.php';
+namespace EasyTranslate;
+
+use EasyTranslate\Loaders\LoaderInterface;
+use EasyTranslate\Loaders\SettingsLoader;
 
 /**
  * Fired during plugin activation
@@ -13,7 +16,7 @@ require_once plugin_dir_path(__DIR__) . 'src/Loaders/EasyTranslateSettingsLoader
 class EasyTranslateLoader
 {
     private $loaders = [
-        EasyTranslateSettingsLoader::class,
+        SettingsLoader::class,
     ];
 
     /**
@@ -28,7 +31,7 @@ class EasyTranslateLoader
     private function bootLoaders(): void
     {
         foreach ($this->loaders as $className) {
-            /** @var EasyTranslateLoaderInterface $instance */
+            /** @var LoaderInterface $instance */
             $instance = new $className;
             $instance->load();
         }

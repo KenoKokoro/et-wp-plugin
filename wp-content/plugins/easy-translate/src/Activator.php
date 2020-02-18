@@ -1,5 +1,7 @@
 <?php
 
+namespace EasyTranslate;
+
 /**
  * Fired during plugin activation
  * This class defines all code necessary to run during the plugin's activation.
@@ -8,7 +10,7 @@
  * @subpackage EasyTranslate/src
  * @author     Stefan Brankovikj <sbk@easytranslate.com>
  */
-class EasyTranslateActivator
+class Activator
 {
     /**
      * Activate the plugin
