@@ -2,8 +2,6 @@
 
 namespace EasyTranslate\Loaders;
 
-use EasyTranslate\Api\Send\ApiService;
-use EasyTranslate\Fields\FieldNameMapper;
 use EasyTranslate\Fields\SandboxCredentialSectionHandler;
 
 /**

@@ -4,6 +4,7 @@ namespace EasyTranslate\Loaders;
 
 use EasyTranslate\Api\Send\ApiService;
 use EasyTranslate\Fields\FieldNameMapper;
+use EasyTranslate\Fields\MetaBoxSectionHandler;
 use WP_Post;
 
 class PublishPostLoader implements LoaderInterface
@@ -13,15 +14,25 @@ class PublishPostLoader implements LoaderInterface
      */
     public function load(): void
     {
-        add_action('publish_post', [$this, 'sendContentForTranslate'], 10, 2);
+        add_action('transition_post_status', [$this, 'sendContentForTranslate'], 10, 4);
     }
 
     /**
-     * @param int      $id
+     * @param string  $newStatus
+     * @param string  $oldStatus
      * @param WP_Post $post
      */
-    public function sendContentForTranslate(int $id, WP_Post $post): void
+    public function sendContentForTranslate(string $newStatus, string $oldStatus, WP_Post $post): void
     {
+        if ($newStatus !== 'publish' or $oldStatus === 'publish') {
+            return;
+        }
+
+        $source = get_post_meta($post->ID, MetaBoxSectionHandler::SOURCE_LANGUAGE_FIELD, true);
+        $target = get_post_meta($post->ID, MetaBoxSectionHandler::TARGET_LANGUAGES_FIELD, true);
+        if (empty($target) or empty($source)) {
+            return;
+        }
         $options = get_option(SettingsLoader::OPTION_NAME);
 
         $service = new ApiService(FieldNameMapper::map($options));
@@ -32,6 +43,6 @@ class PublishPostLoader implements LoaderInterface
             'post_name' => $post->post_name,
         ];
 
-        wp_die(dump($service->translate($content)));
+        $service->translate($source, $target, $content);
     }
 }

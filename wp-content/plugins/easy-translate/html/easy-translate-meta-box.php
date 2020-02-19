@@ -2,7 +2,7 @@
 
 use EasyTranslate\Fields\MetaBoxSectionHandler;
 
-/** @var $object */
+/** @var $post */
 /** @var array $availableLanguages */
 ?>
 <div>
@@ -13,7 +13,10 @@ use EasyTranslate\Fields\MetaBoxSectionHandler;
           <?php
           foreach ($availableLanguages as $iso => $name) {
               ?>
-            <option value="<?php echo $iso; ?>"><?php echo $name; ?></option>
+            <option value="<?php echo $iso; ?>"
+                <?php echo (get_post_meta($post->ID, MetaBoxSectionHandler::SOURCE_LANGUAGE_FIELD,
+                        true) === $iso) ? 'selected' : '' ?>
+            ><?php echo $name; ?></option>
           <?php } ?>
       </select>
     </div>
@@ -27,7 +30,10 @@ use EasyTranslate\Fields\MetaBoxSectionHandler;
         <div>
           <label for="meta-box-<?php echo $iso; ?>">
             <input type="checkbox" name="<?php echo MetaBoxSectionHandler::TARGET_LANGUAGES_FIELD; ?>[]"
-                   id="meta-box-<?php echo $iso; ?>"> <?php echo $name; ?>
+                   id="meta-box-<?php echo $iso; ?>" value="<?php echo $iso; ?>"
+                <?php echo (in_array($iso, get_post_meta($post->ID, MetaBoxSectionHandler::TARGET_LANGUAGES_FIELD,
+                        true) ?? [])) ? 'checked' : '' ?>
+            > <?php echo $name; ?>
           </label>
         </div>
       <?php } ?>

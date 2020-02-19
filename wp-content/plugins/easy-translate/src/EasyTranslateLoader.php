@@ -18,9 +18,9 @@ use EasyTranslate\Loaders\SettingsLoader;
 class EasyTranslateLoader
 {
     private $loaders = [
+        MetaBoxLoader::class,
         SettingsLoader::class,
         PublishPostLoader::class,
-        MetaBoxLoader::class,
     ];
 
     /**

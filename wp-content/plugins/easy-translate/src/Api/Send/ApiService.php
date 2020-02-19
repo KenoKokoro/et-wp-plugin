@@ -90,17 +90,19 @@ class ApiService
     }
 
     /**
-     * @param array $content
+     * @param string $source
+     * @param array  $target
+     * @param array  $content
      * @return array
      */
-    public function translate(array $content): array
+    public function translate(string $source, array $target, array $content): array
     {
         $path = $this->versionedPath('projects');
         try {
             $response = $this->httpClient->post($path, [
                 'json' => [
-                    'source_language' => 'en',
-                    'target_languages' => ['da', 'de'],
+                    'source_language' => $source,
+                    'target_languages' => $target,
                     'content' => $content,
                     'callback_url' => $this->callbackUrl,
                 ],
