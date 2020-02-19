@@ -50,6 +50,7 @@ class FieldNameMapper
             'username' => $this->options[SandboxCredentialSectionHandler::SANDBOX_LOGIN_USERNAME_FIELD] ?? null,
             'password' => $this->options[SandboxCredentialSectionHandler::SANDBOX_LOGIN_PASSWORD_FIELD] ?? null,
             'access_token' => $this->options[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] ?? null,
+            'callback_url' => $this->options[SandboxCredentialSectionHandler::SANDBOX_CALLBACK_URL] ?? null,
         ];
     }
 

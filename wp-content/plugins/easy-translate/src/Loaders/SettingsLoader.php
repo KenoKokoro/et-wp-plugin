@@ -18,7 +18,7 @@ class SettingsLoader implements LoaderInterface
 {
     const OPTION_NAME = 'easy_translate_api_integration';
     const SANDBOX_MODE_FIELD = 'et_api_sandbox_mode';
-    const PAGE_NAME = 'easy_translate_api_page';
+    const PAGE_NAME = 'easy_translate_api_sandbox_page';
     const CREDENTIAL_SANDBOX_SECTION_NAME = 'et_api_sandbox_credentials_section';
 
     /**
@@ -57,67 +57,33 @@ class SettingsLoader implements LoaderInterface
      */
     public function initializeSettingsPage(): void
     {
+        $handler = new SandboxCredentialSectionHandler();
         register_setting(
             'easy-translate-api-group',
             self::OPTION_NAME,
-            [$this, 'sanitizeBeforeSave']
+            [$handler, 'sanitizeBeforeSave']
         );
 
-        $this->registerCredentialsSection();
+        $this->registerCredentialsSection($handler);
     }
 
     public function showApiCredentialsSectionInfo(): void
     {
-        echo __('Enter your settings bellow');
+        echo __('Enter your sandbox credentials bellow');
     }
 
-    public function sanitizeBeforeSave(?array $input)
+    /**
+     * @param SandboxCredentialSectionHandler $handler
+     */
+    private function registerCredentialsSection(SandboxCredentialSectionHandler $handler): void
     {
-        $newInput = [];
-
-        foreach ($input as $id => $value) {
-            $newInput[$id] = sanitize_text_field($value);
-        }
-
-        $service = new ApiService(FieldNameMapper::map($newInput));
-        $response = $service->login();
-        if ($response['error'] ?? false) {
-            add_settings_error(
-                SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
-                'access-token-error',
-                $response['error'] ?? '',
-                'error'
-            );
-            add_settings_error(
-                SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
-                'access-token-error',
-                $response['hint'] ?? '',
-                'info'
-            );
-            $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = '';
-            $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = '';
-
-            return $newInput;
-        }
-        $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD] = $response['access_token'];
-        $newInput[SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = date(
-            'Y-m-d H:i:s',
-            strtotime('now') + $response['expires_in']
-        );
-
-        return $newInput;
-    }
-
-    private function registerCredentialsSection(): void
-    {
-
         add_settings_section(
             self::CREDENTIAL_SANDBOX_SECTION_NAME, // ID
-            'Login Credentials', // Title
+            'Login Sandbox Credentials', // Title
             [$this, 'showApiCredentialsSectionInfo'], // Callback
             self::PAGE_NAME // Page
         );
 
-        (new SandboxCredentialSectionHandler())->showFields();
+        $handler->showFields();
     }
 }

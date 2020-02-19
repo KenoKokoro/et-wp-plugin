@@ -32,6 +32,6 @@ class PublishPostLoader implements LoaderInterface
             'post_name' => $post->post_name,
         ];
 
-        $service->translate($content);
+        wp_die(dump($service->translate($content)));
     }
 }

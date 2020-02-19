@@ -13,6 +13,13 @@ class ApiService
     private const PRODUCTION_URL = 'https://api.platform.easytranslate.com';
     private const GRANT_TYPE_PASSWORD = 'password';
 
+    const AVAILABLE_LANGUAGES = [
+        'en' => 'English',
+        'sw' => 'Swedish',
+        'dk' => 'Danish',
+        'no' => 'Norwegian',
+    ];
+
     /**
      * @var string
      */
@@ -46,7 +53,7 @@ class ApiService
     /**
      * @var string|null
      */
-    private $refreshToken = null;
+    private $callbackUrl = null;
 
     /**
      * @var
@@ -82,6 +89,10 @@ class ApiService
         }
     }
 
+    /**
+     * @param array $content
+     * @return array
+     */
     public function translate(array $content): array
     {
         $path = $this->versionedPath('projects');
@@ -91,12 +102,13 @@ class ApiService
                     'source_language' => 'en',
                     'target_languages' => ['da', 'de'],
                     'content' => $content,
+                    'callback_url' => $this->callbackUrl,
                 ],
             ]);
 
             return $this->decodeBody($response);
         } catch (RequestException $exception) {
-            wp_die(dump($this->decodeBody($exception->getResponse())));
+            return $this->decodeBody($exception->getResponse());
         }
     }
 
@@ -112,6 +124,7 @@ class ApiService
         $this->password = $options['password'] ?? null;
         $this->accessToken = $options['access_token'] ?? null;
         $this->sandboxMode = $options['sandbox_mode'] ?? true;
+        $this->callbackUrl = $options['callback_url'] ?? null;
     }
 
     /**

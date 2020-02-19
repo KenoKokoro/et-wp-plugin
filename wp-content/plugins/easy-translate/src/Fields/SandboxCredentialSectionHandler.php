@@ -2,6 +2,7 @@
 
 namespace EasyTranslate\Fields;
 
+use EasyTranslate\Api\Send\ApiService;
 use EasyTranslate\Loaders\SettingsLoader;
 
 class SandboxCredentialSectionHandler
@@ -12,6 +13,7 @@ class SandboxCredentialSectionHandler
     const SANDBOX_LOGIN_PASSWORD_FIELD = 'et_api_sandbox_login_password';
     const SANDBOX_ACCESS_TOKEN_FIELD = 'et_api_sandbox_access_token';
     const SANDBOX_ACCESS_TOKEN_TTL_FIELD = 'et_api_sandbox_access_token_ttl';
+    const SANDBOX_CALLBACK_URL = 'et_api_sandbox_callback_url';
 
     /**
      * @var array
@@ -29,47 +31,91 @@ class SandboxCredentialSectionHandler
         $this->options = get_option($this->optionName);
     }
 
+    public function sanitizeBeforeSave(?array $input)
+    {
+        $newInput = [];
+
+        foreach ($input as $id => $value) {
+            $newInput[$id] = sanitize_text_field($value);
+        }
+
+        $service = new ApiService(FieldNameMapper::map($newInput));
+        $response = $service->login();
+        if ($response['error'] ?? false) {
+            add_settings_error(
+                self::SANDBOX_ACCESS_TOKEN_FIELD,
+                'access-token-error',
+                $response['error'] ?? '',
+                'error'
+            );
+            add_settings_error(
+                self::SANDBOX_ACCESS_TOKEN_FIELD,
+                'access-token-error',
+                $response['hint'] ?? '',
+                'info'
+            );
+            $newInput[self::SANDBOX_ACCESS_TOKEN_FIELD] = '';
+            $newInput[self::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = '';
+
+            return $newInput;
+        }
+        $newInput[self::SANDBOX_ACCESS_TOKEN_FIELD] = $response['access_token'];
+        $newInput[self::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = date(
+            'Y-m-d H:i:s',
+            strtotime('now') + $response['expires_in']
+        );
+
+        return $newInput;
+    }
+
     public function showFields(): void
     {
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_CLIENT_ID_FIELD, // ID
+            self::SANDBOX_CLIENT_ID_FIELD, // ID
             __('Client ID'), // Title
-            [$this, 'sandboxClientIdHandler'], // Callback
+            [$this, 'clientIdHandler'], // Callback
             SettingsLoader::PAGE_NAME, // Page
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME // Section
         );
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_CLIENT_SECRET_FIELD,
+            self::SANDBOX_CLIENT_SECRET_FIELD,
             __('Client Secret'),
-            [$this, 'sandboxClientSecretHandler'],
+            [$this, 'clientSecretHandler'],
             SettingsLoader::PAGE_NAME,
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
         );
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_LOGIN_USERNAME_FIELD,
+            self::SANDBOX_LOGIN_USERNAME_FIELD,
             __('Username'),
-            [$this, 'sandboxUsernameHandler'],
+            [$this, 'usernameHandler'],
             SettingsLoader::PAGE_NAME,
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
         );
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_LOGIN_PASSWORD_FIELD,
+            self::SANDBOX_LOGIN_PASSWORD_FIELD,
             __('Password'),
-            [$this, 'sandboxPasswordHandler'],
+            [$this, 'passwordHandler'],
             SettingsLoader::PAGE_NAME,
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
         );
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_FIELD,
+            self::SANDBOX_ACCESS_TOKEN_FIELD,
             __('Access Token'),
-            [$this, 'sandboxAccessToken'],
+            [$this, 'accessToken'],
             SettingsLoader::PAGE_NAME,
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
         );
         add_settings_field(
-            SandboxCredentialSectionHandler::SANDBOX_ACCESS_TOKEN_TTL_FIELD,
+            self::SANDBOX_ACCESS_TOKEN_TTL_FIELD,
             __('Access Token Valid Until'),
-            [$this, 'sandboxAccessTokenTtl'],
+            [$this, 'accessTokenTtl'],
+            SettingsLoader::PAGE_NAME,
+            SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
+        );
+        add_settings_field(
+            self::SANDBOX_CALLBACK_URL,
+            __('Webhook URL'),
+            [$this, 'callbackUrl'],
             SettingsLoader::PAGE_NAME,
             SettingsLoader::CREDENTIAL_SANDBOX_SECTION_NAME
         );
@@ -78,7 +124,7 @@ class SandboxCredentialSectionHandler
     /**
      * Show the client ID field
      */
-    public function sandboxClientIdHandler(): void
+    public function clientIdHandler(): void
     {
         $this->textField(self::SANDBOX_CLIENT_ID_FIELD, 'Client ID from our platform.');
     }
@@ -86,7 +132,7 @@ class SandboxCredentialSectionHandler
     /**
      * Show the client secret field
      */
-    public function sandboxClientSecretHandler(): void
+    public function clientSecretHandler(): void
     {
         $this->textField(self::SANDBOX_CLIENT_SECRET_FIELD, 'Client Secret from our platform.');
     }
@@ -94,7 +140,7 @@ class SandboxCredentialSectionHandler
     /**
      * Show the username field
      */
-    public function sandboxUsernameHandler(): void
+    public function usernameHandler(): void
     {
         $this->textField(self::SANDBOX_LOGIN_USERNAME_FIELD, 'Login Username from our platform.');
     }
@@ -102,15 +148,20 @@ class SandboxCredentialSectionHandler
     /**
      * Show the password field
      */
-    public function sandboxPasswordHandler(): void
+    public function passwordHandler(): void
     {
         $this->textField(self::SANDBOX_LOGIN_PASSWORD_FIELD, 'Login Password from our platform.');
+    }
+
+    public function callbackUrl(): void
+    {
+        $this->textField(self::SANDBOX_CALLBACK_URL, 'Callback URL');
     }
 
     /**
      * Show the access token field
      */
-    public function sandboxAccessToken(): void
+    public function accessToken(): void
     {
         if ($this->options[self::SANDBOX_ACCESS_TOKEN_FIELD] ?? false) {
             echo "<p><strong>Access token is set properly.</strong></p>";
@@ -124,7 +175,7 @@ class SandboxCredentialSectionHandler
     /**
      * Show the access token TTL field
      */
-    public function sandboxAccessTokenTtl(): void
+    public function accessTokenTtl(): void
     {
         if ($this->options[self::SANDBOX_ACCESS_TOKEN_TTL_FIELD] ?? false) {
             echo "<p><strong>{$this->options[self::SANDBOX_ACCESS_TOKEN_TTL_FIELD]}</strong></p>";

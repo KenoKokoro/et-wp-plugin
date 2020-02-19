@@ -3,6 +3,7 @@
 namespace EasyTranslate;
 
 use EasyTranslate\Loaders\LoaderInterface;
+use EasyTranslate\Loaders\MetaBoxLoader;
 use EasyTranslate\Loaders\PublishPostLoader;
 use EasyTranslate\Loaders\SettingsLoader;
 
@@ -19,6 +20,7 @@ class EasyTranslateLoader
     private $loaders = [
         SettingsLoader::class,
         PublishPostLoader::class,
+        MetaBoxLoader::class,
     ];
 
     /**
