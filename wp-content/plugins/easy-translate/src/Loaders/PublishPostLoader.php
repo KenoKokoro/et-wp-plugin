@@ -43,6 +43,6 @@ class PublishPostLoader implements LoaderInterface
             'post_name' => $post->post_name,
         ];
 
-        $service->translate($source, $target, $content);
+        $service->translate($source, $target, $content, $content['post_name']);
     }
 }

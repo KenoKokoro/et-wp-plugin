@@ -90,12 +90,13 @@ class ApiService
     }
 
     /**
-     * @param string $source
-     * @param array  $target
-     * @param array  $content
+     * @param string      $source
+     * @param array       $target
+     * @param array       $content
+     * @param string|null $projectName
      * @return array
      */
-    public function translate(string $source, array $target, array $content): array
+    public function translate(string $source, array $target, array $content, string $projectName = null): array
     {
         $path = $this->versionedPath('projects');
         try {
@@ -104,6 +105,7 @@ class ApiService
                     'source_language' => $source,
                     'target_languages' => $target,
                     'content' => $content,
+                    'name' => $projectName,
                     'callback_url' => $this->callbackUrl,
                 ],
             ]);
