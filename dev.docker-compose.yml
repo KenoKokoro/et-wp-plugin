@@ -3,9 +3,11 @@ version: '3.3'
 services:
   ngrok:
     image: wernight/ngrok
+    links:
+      - wordpress
     ports:
       - "4040:4040"
     entrypoint:
       - ngrok
       - http
-      - wordpress:8080
+      - wordpress:80

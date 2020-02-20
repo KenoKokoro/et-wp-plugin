@@ -8,6 +8,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class ApiService
 {
+    const WEB_HOOK_ACTION = 'et_api_web_hook_action';
     private const API_VERSION = 'v1';
     private const SANDBOX_URL = 'https://api.platform.sandbox.easytranslate.com';
     private const PRODUCTION_URL = 'https://api.platform.easytranslate.com';
@@ -15,8 +16,8 @@ class ApiService
 
     const AVAILABLE_LANGUAGES = [
         'en' => 'English',
-        'sw' => 'Swedish',
-        'dk' => 'Danish',
+        'sv' => 'Swedish',
+        'da' => 'Danish',
         'no' => 'Norwegian',
     ];
 
@@ -56,7 +57,7 @@ class ApiService
     private $callbackUrl = null;
 
     /**
-     * @var
+     * @var Client
      */
     private $httpClient;
 
@@ -67,7 +68,7 @@ class ApiService
     public function __construct(array $options)
     {
         $this->setInitialValues($options);
-        $this->httpClient = $this->createHttpClient();
+        $this->createHttpClient();
     }
 
     public function login(): array
@@ -78,7 +79,10 @@ class ApiService
                 ['form_params' => $this->loginCredentials()]
             );
 
-            return $this->decodeBody($response);
+            $body = $this->decodeBody($response);
+            $this->accessToken = $body['access_token'];
+
+            return $body;
         } catch (RequestException $exception) {
             $body = $this->decodeBody($exception->getResponse());
 
@@ -86,6 +90,23 @@ class ApiService
                 'error' => $body['error_description'],
                 'hint' => $body['hint'] ?? 'Please verify your credentials',
             ];
+        }
+    }
+
+    /**
+     * @return array
+     */
+    public function loggedCustomer(): array
+    {
+        $this->createHttpClient();
+        $path = $this->versionedPath('user');
+        try {
+            $response = $this->httpClient->get($path);
+
+            return $this->decodeBody($response)['data'];
+        } catch (RequestException $exception) {
+            $message = $this->decodeBody($exception->getResponse())['message'] ?? null;
+            wp_die($message);
         }
     }
 
@@ -105,14 +126,32 @@ class ApiService
                     'source_language' => $source,
                     'target_languages' => $target,
                     'content' => $content,
-                    'name' => $projectName,
-                    'callback_url' => $this->callbackUrl,
+                    'name' => "WP-{$projectName}",
+                    'callback_url' => "{$this->callbackUrl}/wp-admin/admin-ajax.php?action=" . ApiService::WEB_HOOK_ACTION,
                 ],
             ]);
 
             return $this->decodeBody($response);
         } catch (RequestException $exception) {
-            return $this->decodeBody($exception->getResponse());
+            $message = $this->decodeBody($exception->getResponse())['message'] ?? null;
+            wp_die($message);
+        }
+    }
+
+    /**
+     * @param string $path
+     * @return array
+     */
+    public function getTargetContent(string $path): array
+    {
+        try {
+            $response = $this->httpClient->get($path);
+
+            return $this->decodeBody($response);
+        } catch (RequestException $exception) {
+            wp_die(dump($exception));
+            $message = $this->decodeBody($exception->getResponse())['message'] ?? null;
+            wp_die($message);
         }
     }
 
@@ -131,18 +170,14 @@ class ApiService
         $this->callbackUrl = $options['callback_url'] ?? null;
     }
 
-    /**
-     * @return Client
-     */
-    private function createHttpClient(): Client
+    private function createHttpClient(): void
     {
         $url = ($this->sandboxMode === true) ? self::SANDBOX_URL : self::PRODUCTION_URL;
         $headers = ['User-Agent' => 'EasyTranslate/Wordpress+0.0.1'];
         if ($this->accessToken !== null) {
             $headers['Authorization'] = "Bearer {$this->accessToken}";
         }
-
-        return new Client(['base_uri' => $url, 'headers' => $headers]);
+        $this->httpClient = new Client(['base_uri' => $url, 'headers' => $headers]);
     }
 
     /**

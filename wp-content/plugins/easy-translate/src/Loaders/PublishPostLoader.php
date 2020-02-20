@@ -9,6 +9,9 @@ use WP_Post;
 
 class PublishPostLoader implements LoaderInterface
 {
+    const META_TRANSLATION_FIELD = 'et_api_is_translation_meta';
+    const META_TASK_ID_FIELD = 'et_api_task_id_meta';
+
     /**
      * Set the hooks required to translate the publisher post
      */
@@ -42,7 +45,34 @@ class PublishPostLoader implements LoaderInterface
             'post_excerpt' => $post->post_exceprt,
             'post_name' => $post->post_name,
         ];
+        $projectName = "{$content['post_name']}-{$post->ID}";
 
-        $service->translate($source, $target, $content, $content['post_name']);
+        $this->createTranslatedPosts(
+            $service->translate($source, $target, $content, $projectName),
+            $post
+        );
+    }
+
+    /**
+     * @param array   $response
+     * @param WP_Post $post
+     */
+    private function createTranslatedPosts(array $response, WP_Post $post): void
+    {
+        $tasks = array_filter($response['included'], function(array $included) {
+            return $included['type'] === 'task';
+        });
+
+        foreach ($tasks as $task) {
+            $attributes = $task['attributes'];
+            $postId = wp_insert_post([
+                'post_title' => "{$post->post_title}-({$attributes['target_language']})",
+                'post_name' => "{$post->post_name}-{$attributes['target_language']}",
+                'post_type' => $post->type,
+            ]);
+
+            update_post_meta($postId, self::META_TRANSLATION_FIELD, true);
+            update_post_meta($postId, self::META_TASK_ID_FIELD, $task['id']);
+        }
     }
 }

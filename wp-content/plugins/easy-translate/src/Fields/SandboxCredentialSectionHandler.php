@@ -14,6 +14,7 @@ class SandboxCredentialSectionHandler
     const SANDBOX_ACCESS_TOKEN_FIELD = 'et_api_sandbox_access_token';
     const SANDBOX_ACCESS_TOKEN_TTL_FIELD = 'et_api_sandbox_access_token_ttl';
     const SANDBOX_CALLBACK_URL = 'et_api_sandbox_callback_url';
+    const SANDBOX_CUSTOMER_ID = 'et_api_sandbox_customer_id';
 
     /**
      * @var array
@@ -56,6 +57,7 @@ class SandboxCredentialSectionHandler
             );
             $newInput[self::SANDBOX_ACCESS_TOKEN_FIELD] = '';
             $newInput[self::SANDBOX_ACCESS_TOKEN_TTL_FIELD] = '';
+            $newInput[self::SANDBOX_CUSTOMER_ID] = '';
 
             return $newInput;
         }
@@ -64,6 +66,7 @@ class SandboxCredentialSectionHandler
             'Y-m-d H:i:s',
             strtotime('now') + $response['expires_in']
         );
+        $newInput[self::SANDBOX_CUSTOMER_ID] = $service->loggedCustomer()['id'];
 
         return $newInput;
     }

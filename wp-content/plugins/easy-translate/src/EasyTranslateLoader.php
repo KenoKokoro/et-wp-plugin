@@ -6,6 +6,7 @@ use EasyTranslate\Loaders\LoaderInterface;
 use EasyTranslate\Loaders\MetaBoxLoader;
 use EasyTranslate\Loaders\PublishPostLoader;
 use EasyTranslate\Loaders\SettingsLoader;
+use EasyTranslate\Loaders\WebHookActionLoader;
 
 /**
  * Fired during plugin activation
@@ -21,6 +22,7 @@ class EasyTranslateLoader
         MetaBoxLoader::class,
         SettingsLoader::class,
         PublishPostLoader::class,
+        WebHookActionLoader::class,
     ];
 
     /**
