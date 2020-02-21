@@ -149,7 +149,6 @@ class ApiService
 
             return $this->decodeBody($response);
         } catch (RequestException $exception) {
-            wp_die(dump($exception));
             $message = $this->decodeBody($exception->getResponse())['message'] ?? null;
             wp_die($message);
         }

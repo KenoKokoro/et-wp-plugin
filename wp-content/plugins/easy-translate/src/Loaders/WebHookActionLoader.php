@@ -35,6 +35,7 @@ class WebHookActionLoader implements LoaderInterface
 
         $content = $this->fetchContent($task);
         $content['ID'] = $post->ID;
+        $content['post_status'] = 'publish';
 
         wp_update_post($content);
     }
