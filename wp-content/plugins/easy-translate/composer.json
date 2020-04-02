@@ -11,5 +11,20 @@
     "easy",
     "translate",
     "easy translate"
-  ]
+  ],
+  "autoload": {
+    "psr-4": {
+      "EasyTranslate\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7.0",
+    "guzzlehttp/guzzle": "~6.0",
+    "ext-json": "*"
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "require-dev": {
+    "symfony/var-dumper": "^5.0"
+  }
 }

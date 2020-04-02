@@ -3,11 +3,10 @@
   <form method="post" action="options.php">
       <?php
       settings_errors();
-      submit_button();
+      submit_button('Save Changes');
       settings_fields('easy-translate-api-group');
-      do_settings_sections('easy_translate_api_page');
-      submit_button();
+      do_settings_sections(\EasyTranslate\Loaders\SettingsLoader::PAGE_NAME);
+      submit_button('Save Changes');
       ?>
-
   </form>
 </div>
