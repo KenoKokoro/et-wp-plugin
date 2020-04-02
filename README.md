@@ -23,7 +23,7 @@ The translated content when task is completed and translated is found in the `ta
 This will return the translated content of the previously uploaded file
 
 ## Wordpress plugin features
-  ##### New settings page after the plugin is updated. In here login credentials should be provided, and access token should be stored in order to create new projects.
-  ##### New menu on the side bar when posting/editing post screen. Initially how this works is when the status is set to `publish` from any other status, the translation is triggered.
-  ##### All logic for the API communication should be found on the `ApiService` class
-  ##### It only interacts and has fields for sandbox environment 
+  1. New settings page after the plugin is updated. In here login credentials should be provided, and access token should be stored in order to create new projects.
+  2. New menu on the side bar when posting/editing post screen. Initially how this works is when the status is set to `publish` from any other status, the translation is triggered.
+  3. All logic for the API communication should be found on the `ApiService` class
+  4. It only interacts and has fields for sandbox environment 
